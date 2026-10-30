@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 
 const { errorHandler, notFoundHandler } = require("./src/middleware/errorHandler");
+const apiRoutes = require("./src/routes");
 
 const app = express();
 
@@ -19,8 +20,10 @@ app.get("/", (_req, res) => {
     res.json({ name: "AI Whiteboard Notes API", version: "1.0.0", status: "running" });
 });
 
+app.use("/api", apiRoutes);
+
 app.use(notFoundHandler);
-app.use(errorHandler);
+app.use(errorHandler);  
 
 const PORT = process.env.PORT || 5050;
 
