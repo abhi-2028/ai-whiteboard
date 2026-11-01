@@ -6,7 +6,7 @@ This folder documents the current server implementation in detail. It follows th
 
 | Document | Scope |
 |---|---|
-| [`01-server-and-rest-flow.md`](./01-server-and-rest-flow.md) | Express startup, authentication, middleware, routes, user APIs, board APIs, and error flow |
+| [`01-server-and-rest-flow.md`](./01-server-and-rest-flow.md) | Express startup, authentication, middleware, routes, user APIs, board APIs, image uploads, and error flow |
 | [`02-element-flow.md`](./02-element-flow.md) | Element validation, create/update/delete/bulk database flows, responses, broadcasts, and current blocker |
 | [`03-realtime-flow.md`](./03-realtime-flow.md) | Socket.IO setup, token authentication, board rooms, presence, cursor, and live element events |
 | [`04-database-operations.md`](./04-database-operations.md) | PostgreSQL schema, relationships, indexes, initialization, all SQL operations, cascades, and consistency notes |
@@ -67,7 +67,7 @@ sequenceDiagram
 
 ## Current implementation note
 
-The Socket.IO server is initialized from [`../index.js`](../index.js) through [`../src/socket/index.js`](../src/socket/index.js). REST mutations use [`../src/realtime/index.js`](../src/realtime/index.js) to broadcast to joined rooms.
+The Socket.IO server is initialized from [`../index.js`](../index.js) through [`../src/socket/index.js`](../src/socket/index.js). REST mutations use [`../src/realtime/index.js`](../src/realtime/index.js) to broadcast to joined rooms. Image uploads are a separate REST flow: they store the uploaded image and return a URL, but do not broadcast an event.
 
 There is one known element-flow defect:
 

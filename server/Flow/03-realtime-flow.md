@@ -144,6 +144,8 @@ REST controllers call `emitToBoard(boardId, event, payload, exceptSocketId)`:
 
 If Socket.IO has not been initialized, `emitToBoard` returns without emitting. In the current `index.js`, initialization is wired.
 
+Image uploads use `POST /api/whiteboards/:boardId/upload` and are intentionally not part of the realtime event flow. The upload endpoint stores the image in object storage or local disk and returns its URL; the client can then persist an `image` element through the normal element REST endpoint, which emits `element:created`.
+
 ## 11. Realtime architecture
 
 ```mermaid

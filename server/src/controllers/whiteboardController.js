@@ -3,6 +3,7 @@ const { query } = require("../config/db");
 const ApiError = require("../utils/ApiError");
 const asyncHandler = require("../utils/asyncHandler");
 const { emitToBoard } = require("../realtime");
+const { deleteUploadByUrl } = require("../utils/fileCleanup");
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 
@@ -219,10 +220,19 @@ const deleteBoard = asyncHandler(async (req, res) => {
             "Only the owner can delete a whiteboard"
         );
     }
+    const imgs = await query(
+        `SELECT data FROM elements
+         WHERE whiteboard_id = $1 AND type = 'image'`,
+        [req.board.id]
+    );
 
     await query(
         "DELETE FROM whiteboards WHERE id = $1",
         [req.board.id]
+    );
+
+    imgs.rows.forEach((r) => 
+        deleteUploadByUrl(r.data?.src)
     );
 
     res.json({

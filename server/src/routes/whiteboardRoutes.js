@@ -6,6 +6,8 @@ const {
 } = require("../middleware/whiteboardAccess");
 const board = require("../controllers/whiteboardController");
 const element  = require("../controllers/elementController");
+const { uploadImage } = require("../middleware/upload");
+const uploadCtrl = require("../controllers/uploadController");
 
 const router = express.Router();
 
@@ -20,6 +22,8 @@ router.delete('/:boardId', requireBoardAccess, board.deleteBoard);
 
 router.post('/:boardId/members', requireBoardAccess, board.addMember);
 router.delete('/:boardId/members/:userId', requireBoardAccess, board.removeMember);
+
+router.post("/:boardId/upload", requireBoardAccess, requireEditAccess, uploadImage, uploadCtrl.uploadImage);
 
 router.post('/:boardId/elements', requireBoardAccess, requireEditAccess, element.createElement);
 router.post('/:boardId/elements/bulk', requireBoardAccess, requireEditAccess, element.bulkCreate);

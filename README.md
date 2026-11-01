@@ -58,7 +58,7 @@ The current implementation focuses on the authenticated API, persistence model, 
 - No live deployment URL is configured in the repository.
 - No automated test files or test script are currently present.
 - Element persistence currently contains a known table-name mismatch: `touchBoard()` updates `boards`, while the schema defines `whiteboards`. See [`server/Flow/02-element-flow.md`](./server/Flow/02-element-flow.md).
-- AI, file upload, S3, and Google GenAI packages appear in the server manifest, but no corresponding active route or service is currently present in the tracked source.
+- Image upload is available through the protected `POST /api/whiteboards/:boardId/upload` route, with Neon Object Storage/S3 support and a local-storage fallback. The upload flow is documented in [`server/Flow/01-server-and-rest-flow.md`](./server/Flow/01-server-and-rest-flow.md).
 
 ## Screenshots & Live Demo
 

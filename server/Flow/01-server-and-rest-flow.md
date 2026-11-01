@@ -8,12 +8,13 @@ The server starts in [`../index.js`](../index.js):
 2. Express is created.
 3. CORS allows `CLIENT_URL`, defaulting to `http://localhost:5173`, with credentials.
 4. JSON parsing accepts request bodies up to `5mb`.
-5. `GET /` returns API status.
-6. `/api` is mounted from [`../src/routes/index.js`](../src/routes/index.js).
-7. 404 and error middleware are registered.
-8. `http.createServer(app)` creates the HTTP server.
-9. `initSocket(server)` attaches Socket.IO.
-10. The combined API and Socket.IO server listens on `PORT`, default `5050`.
+5. `/uploads` serves locally stored uploads from the upload directory with a 30-day immutable cache policy.
+6. `GET /` returns API status.
+7. `/api` is mounted from [`../src/routes/index.js`](../src/routes/index.js).
+8. 404 and error middleware are registered.
+9. `http.createServer(app)` creates the HTTP server.
+10. `initSocket(server)` attaches Socket.IO.
+11. The combined API and Socket.IO server listens on `PORT`, default `5050`.
 
 The database pool is created by [`../src/config/db.js`](../src/config/db.js) when imported. Schema initialization is separate and runs through `npm run db:init`.
 
@@ -34,9 +35,18 @@ flowchart LR
     BOARD -- "No" --> CTRL
     BOARD -- "Yes" --> ACCESS["Board access query"]
     ACCESS --> BOARDCTX["req.board"]
-    BOARDCTX --> CTRL
-    CTRL --> QUERY[("PostgreSQL")]
-    CTRL --> RESPONSE["JSON response"]
+    BOARDCTX --> CTRL{"Board, upload, or element controller"}
+    CTRL --> UPLOAD{"Upload route?"}
+    UPLOAD -- "Yes" --> MULTER["Multer image validation"]
+    MULTER --> STORE["S3 object storage or local disk"]
+    STORE --> URL["Image URL"]
+    UPLOAD -- "No" --> MUTATION["Board or element operation"]
+    MUTATION --> QUERY[("PostgreSQL")]
+    MUTATION --> RT["Realtime broadcast"]
+    RT --> S["Socket.IO room"]
+    URL --> RESPONSE["JSON response"]
+    QUERY --> RESPONSE
+    S --> RESPONSE
     CTRL --> ERR["asyncHandler -> errorHandler"]
 ```
 
@@ -81,6 +91,7 @@ Failures:
 | DELETE | `/api/whiteboards/:boardId` | Auth + board access | Delete board, owner only |
 | POST | `/api/whiteboards/:boardId/members` | Auth + board access | Add/update member, owner only |
 | DELETE | `/api/whiteboards/:boardId/members/:userId` | Auth + board access | Remove member, owner only |
+| POST | `/api/whiteboards/:boardId/upload` | Auth + board access + edit access + image upload | Upload an image |
 | POST | `/api/whiteboards/:boardId/elements` | Auth + board access + edit access | Create element |
 | POST | `/api/whiteboards/:boardId/elements/bulk` | Auth + board access + edit access | Create multiple elements |
 | PATCH | `/api/whiteboards/:boardId/elements/:elementId` | Auth + board access + edit access | Update element |
@@ -88,7 +99,44 @@ Failures:
 
 Element endpoints are detailed in [`02-element-flow.md`](./02-element-flow.md).
 
-## 5. Board authorization
+## 5. Image upload
+
+Route:
+
+```text
+POST /api/whiteboards/:boardId/upload
+```
+
+The request must be authenticated, the user must have board access, and the user must have edit access. The upload middleware expects a `multipart/form-data` request with one file in the `image` field.
+
+The pipeline is:
+
+1. `requireAuth` resolves the authenticated user.
+2. `requireBoardAccess` verifies that the board exists and the user is an owner or member.
+3. `requireEditAccess` rejects viewers with `403`.
+4. Multer stores the file in memory, accepts only MIME types beginning with `image/`, and limits the file to `8 MB`.
+5. The controller generates a timestamp-plus-random filename and maps supported image MIME types to extensions.
+6. If all object-storage settings are configured, the buffer is uploaded to the `whiteboards/<filename>` S3 key.
+7. Otherwise, the buffer is written to the local `uploads` directory and exposed through `/uploads/<filename>`.
+8. The controller returns status `201`:
+
+```json
+{
+  "url": "https://...",
+  "filename": "1760000000000-a1b2c3d4e5f6.png",
+  "size": 12345
+}
+```
+
+The upload does not create a PostgreSQL row and does not emit a Socket.IO event. The returned URL can be placed in the data for an `image` whiteboard element, which can then be persisted through the element endpoint.
+
+Upload failures include:
+
+- `400 No image file provided` when the `image` field is missing.
+- `400 Only image files can be uploaded` when the MIME type is not an image.
+- `400 File size is too large (max 8 MB)` when Multer rejects the file size.
+
+## 6. Board authorization
 
 [`../src/middleware/whiteboardAccess.js`](../src/middleware/whiteboardAccess.js) reads a board ID from route params, body, or query and executes:
 
@@ -110,7 +158,7 @@ It attaches `req.board = { id, owner_id, role }`.
 
 Missing board ID is `400`; missing board is `404`; unauthorized access is `403`.
 
-## 6. User search
+## 7. User search
 
 `GET /api/users/search` returns an empty list without querying when `q` has fewer than two characters. Otherwise:
 
@@ -124,7 +172,7 @@ LIMIT 10;
 
 Response: `{ "user": [...] }`.
 
-## 7. Board operations
+## 8. Board operations
 
 ### List boards
 
@@ -237,7 +285,7 @@ WHERE whiteboard_id = $1 AND user_id = $2;
 
 Member changes emit `member:added` or `member:removed`.
 
-## 8. Error handling
+## 9. Error handling
 
 [`../src/middleware/errorHandler.js`](../src/middleware/errorHandler.js) maps:
 
