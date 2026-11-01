@@ -148,18 +148,18 @@ If Socket.IO has not been initialized, `emitToBoard` returns without emitting. I
 
 ```mermaid
 flowchart TD
-    HTTP[REST mutation] --> Controller[Controller]
-    Controller --> DB[(PostgreSQL)]
-    Controller --> Emit[emitToBoard]
-    Emit --> Room[wb:boardId]
-    SocketClient[Socket client] --> Auth[Socket auth middleware]
-    Auth --> Join[wb:join]
-    Join --> Access[(Board access query)]
+    HTTP["REST mutation"] --> Controller["Controller"]
+    Controller --> DB[("PostgreSQL")]
+    Controller --> Emit["emitToBoard"]
+    Emit --> Room["wb:boardId"]
+    SocketClient["Socket client"] --> Auth["Socket auth middleware"]
+    Auth --> Join["wb:join"]
+    Join --> Access[("Board access query")]
     Access --> Room
-    Room --> Other[Other connected collaborators]
-    SocketClient --> Cursor[presence:cursor]
+    Room --> Other["Other connected collaborators"]
+    SocketClient --> Cursor["presence:cursor"]
     Cursor --> Room
-    SocketClient --> Live[element:live]
+    SocketClient --> Live["element:live"]
     Live --> Room
 ```
 

@@ -206,11 +206,11 @@ RETURNING type, data;
 
 ```mermaid
 flowchart TD
-    User[Delete user] --> Owned[Owned whiteboards deleted]
-    User --> Memberships[User memberships deleted]
-    User --> Creator[created_by set NULL]
-    Board[Delete whiteboard] --> BoardMembers[Board memberships deleted]
-    Board --> BoardElements[Board elements deleted]
+    User["Delete user"] --> Owned["Owned whiteboards deleted"]
+    User --> Memberships["User memberships deleted"]
+    User --> Creator["created_by set NULL"]
+    Board["Delete whiteboard"] --> BoardMembers["Board memberships deleted"]
+    Board --> BoardElements["Board elements deleted"]
 ```
 
 ## 9. Consistency and transaction notes

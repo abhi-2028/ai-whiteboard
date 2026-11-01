@@ -21,23 +21,23 @@ The database pool is created by [`../src/config/db.js`](../src/config/db.js) whe
 
 ```mermaid
 flowchart LR
-    REQ[HTTP request] --> CORS[CORS]
-    CORS --> JSON[express.json 5 MB]
-    JSON --> API[/api]
-    API --> AUTH{Protected?}
-    AUTH -- No --> CTRL[Controller]
-    AUTH -- Yes --> BEARER[Read Bearer token]
-    BEARER --> NEON[Neon Auth verify]
-    NEON --> UPSERT[Upsert local user]
-    UPSERT --> USER[req.user]
-    USER --> BOARD{Board-specific?}
-    BOARD -- No --> CTRL
-    BOARD -- Yes --> ACCESS[Board access query]
-    ACCESS --> BOARDCTX[req.board]
+    REQ["HTTP request"] --> CORS["CORS"]
+    CORS --> JSON["express.json 5 MB"]
+    JSON --> API["/api"]
+    API --> AUTH{"Protected route?"}
+    AUTH -- "No" --> CTRL["Controller"]
+    AUTH -- "Yes" --> BEARER["Read Bearer token"]
+    BEARER --> NEON["Neon Auth verify"]
+    NEON --> UPSERT["Upsert local user"]
+    UPSERT --> USER["req.user"]
+    USER --> BOARD{"Board-specific?"}
+    BOARD -- "No" --> CTRL
+    BOARD -- "Yes" --> ACCESS["Board access query"]
+    ACCESS --> BOARDCTX["req.board"]
     BOARDCTX --> CTRL
-    CTRL --> QUERY[(PostgreSQL)]
-    CTRL --> RESPONSE[JSON response]
-    CTRL --> ERR[asyncHandler -> errorHandler]
+    CTRL --> QUERY[("PostgreSQL")]
+    CTRL --> RESPONSE["JSON response"]
+    CTRL --> ERR["asyncHandler -> errorHandler"]
 ```
 
 All async handlers use [`../src/utils/asyncHandler.js`](../src/utils/asyncHandler.js), which forwards rejected promises to the centralized error handler.

@@ -15,28 +15,28 @@ This folder documents the current server implementation in detail. It follows th
 
 ```mermaid
 flowchart TD
-    C[Client] --> E[index.js]
-    E --> M[CORS and JSON middleware]
-    M --> R[/api router]
-    R --> A{Protected route?}
-    A -- No --> H[Health or root response]
-    A -- Yes --> T[Bearer token]
-    T --> V[Neon Auth verification]
-    V --> U[users upsert]
-    U --> AU[req.user]
-    AU --> B{Board route?}
-    B -- No --> UC[User controller]
-    B -- Yes --> BA[Board access query]
-    BA --> AB[req.board]
-    AB --> EC[Board or element controller]
-    UC --> DB[(PostgreSQL)]
+    C["Client"] --> E["index.js"]
+    E --> M["CORS and JSON middleware"]
+    M --> R["/api router"]
+    R --> A{"Protected route?"}
+    A -- "No" --> H["Health or root response"]
+    A -- "Yes" --> T["Read auth token"]
+    T --> V["Neon Auth verification"]
+    V --> U["users upsert"]
+    U --> AU["req.user"]
+    AU --> B{"Board route?"}
+    B -- "No" --> UC["User controller"]
+    B -- "Yes" --> BA["Board access query"]
+    BA --> AB["req.board"]
+    AB --> EC["Board or element controller"]
+    UC --> DB[("PostgreSQL")]
     EC --> DB
-    EC --> RT[Realtime broadcast]
-    RT --> S[Socket.IO room]
-    DB --> RES[JSON response]
+    EC --> RT["Realtime broadcast"]
+    RT --> S["Socket.IO room"]
+    DB --> RES["JSON response"]
     S --> RES
-    R --> NF[404 handler]
-    EC --> EH[Error handler]
+    R --> NF["404 handler"]
+    EC --> EH["Error handler"]
     UC --> EH
     V --> EH
 ```
@@ -67,7 +67,7 @@ sequenceDiagram
 
 ## Current implementation note
 
-The Socket.IO server is now initialized from [`../index.js`](../index.js) through [`../src/socket/index.js`](../src/socket/index.js). REST mutations use [`../src/realtime/index.js`](../src/realtime/index.js) to broadcast to joined rooms.
+The Socket.IO server is initialized from [`../index.js`](../index.js) through [`../src/socket/index.js`](../src/socket/index.js). REST mutations use [`../src/realtime/index.js`](../src/realtime/index.js) to broadcast to joined rooms.
 
 There is one known element-flow defect:
 
