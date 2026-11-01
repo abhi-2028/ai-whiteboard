@@ -6,6 +6,7 @@ const cors = require("cors");
 const { errorHandler, notFoundHandler } = require("./src/middleware/errorHandler");
 const apiRoutes = require("./src/routes");
 const { initSocket } = require("./src/socket");
+const { UPLOAD_DIR } = require("./src/config/uploads");
 
 const app = express();
 
@@ -17,6 +18,8 @@ app.use(
 );
 
 app.use(express.json({ limit: "5mb" }));
+
+app.use("/uploads", express.static(UPLOAD_DIR, { maxAge: "30d", immutable: true }));
 
 app.get("/", (_req, res) => {
     res.json({ name: "AI Whiteboard Notes API", version: "1.0.0", status: "running" });

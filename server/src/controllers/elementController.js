@@ -2,6 +2,7 @@ const { query } = require('../config/db');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { emitToBoard } = require('../realtime');
+const { deleteUploadByUrl } = require('../utils/fileCleanup');
 
 const VALID_TYPES = [
     'text',
@@ -122,6 +123,10 @@ const deleteElement = asyncHandler(async (req, res) => {
 
     if (!rows.length) {
         throw ApiError.notFound("Element not found");
+    }
+
+    if (rows[0].type === "image") {
+        deleteUploadByUrl(rows[0].data.src);
     }
 
     await touchBoard(req.board.id);
