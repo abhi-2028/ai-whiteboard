@@ -1,9 +1,11 @@
 require("dotenv").config();
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 
 const { errorHandler, notFoundHandler } = require("./src/middleware/errorHandler");
 const apiRoutes = require("./src/routes");
+const { initSocket } = require("./src/socket");
 
 const app = express();
 
@@ -25,10 +27,12 @@ app.use("/api", apiRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);  
 
-const PORT = process.env.PORT || 5050;
+const server = http.createServer(app);
+initSocket(server);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+const PORT = process.env.PORT || 5050;
+server.listen(PORT, () => {
+    console.log(`API + Socket.IO is running on port ${PORT}`);
 });
 
 module.exports = app;
