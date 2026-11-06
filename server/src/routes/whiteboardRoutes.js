@@ -8,6 +8,7 @@ const board = require("../controllers/whiteboardController");
 const element  = require("../controllers/elementController");
 const { uploadImage } = require("../middleware/upload");
 const uploadCtrl = require("../controllers/uploadController");
+const ai = require("../controllers/aiController");
 
 const router = express.Router();
 
@@ -29,5 +30,12 @@ router.post('/:boardId/elements', requireBoardAccess, requireEditAccess, element
 router.post('/:boardId/elements/bulk', requireBoardAccess, requireEditAccess, element.bulkCreate);
 router.patch('/:boardId/elements/:elementId', requireBoardAccess, requireEditAccess, element.updateElement);
 router.delete('/:boardId/elements/:elementId', requireBoardAccess, requireEditAccess, element.deleteElement);
+
+router.post("/:boardId/ai/brainstorm", requireBoardAccess, requireEditAccess, ai.brainstorm);
+router.post("/:boardId/ai/outline", requireBoardAccess, requireEditAccess, ai.outline);
+router.post("/:boardId/ai/diagram", requireBoardAccess, requireEditAccess, ai.diagram);
+router.post("/:boardId/ai/chart", requireBoardAccess, requireEditAccess, ai.chart);
+router.post("/:boardId/ai/edit", requireBoardAccess, requireEditAccess, ai.editSelection);
+router.post("/:boardId/ai/summary", requireBoardAccess, ai.summary);
 
 module.exports = router;
